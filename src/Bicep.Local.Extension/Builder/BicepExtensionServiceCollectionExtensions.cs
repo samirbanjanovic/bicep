@@ -45,11 +45,8 @@ public static class BicepExtensionServiceCollectionExtensions
     ///     });
     /// </code>
     /// </example>
-    public static IBicepExtensionBuilder AddBicepExtension(
+    public static IBicepExtensionBuilder AddBicepServices(
         this IServiceCollection services,
-        string name,
-        string version,
-        bool isSingleton,
         Assembly typeAssembly,
         Type? configurationType = null)
     {
@@ -67,13 +64,11 @@ public static class BicepExtensionServiceCollectionExtensions
         }
 
         var configuration = new Dictionary<string, ObjectTypeProperty>();
-
+        
         services.AddSingleton<ITypeProvider>(new TypeProvider([typeAssembly]));
         services.AddSingleton<ITypeDefinitionBuilder>(sp => new TypeDefinitionBuilder(
-            name,
-            version,
-            isSingleton,
-            configurationType,
+            sp.GetRequiredService<Settings>(),
+            sp.GetKeyedService<Type>("configurationType"),
             typeFactory,
             sp.GetRequiredService<ITypeProvider>(),
             typeDictionary));

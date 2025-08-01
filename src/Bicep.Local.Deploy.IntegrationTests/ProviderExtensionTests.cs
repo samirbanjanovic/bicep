@@ -52,9 +52,9 @@ public class ProviderExtensionTests : TestBase
             {
                 var builder = WebApplication.CreateBuilder();
 
-                builder.AddBicepExtensionHost(processArgs);
+                builder.AddBicepExtension(processArgs);
                 registerHandlers(builder.Services
-                    .AddBicepExtension(
+                    .AddBicepServices(
                         name: "MockExtension",
                         version: "0.0.1",
                         isSingleton: true,

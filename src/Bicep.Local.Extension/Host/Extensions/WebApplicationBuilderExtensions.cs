@@ -41,7 +41,7 @@ public static class WebApplicationBuilderExtensions
     /// await app.RunBicepExtensionAsync();
     /// </code>
     /// </example>
-    public static WebApplicationBuilder AddBicepExtensionHost(this WebApplicationBuilder builder, string[] args)
+    public static IBicepExtensionBuilder AddBicepExtension(this WebApplicationBuilder builder, string[] args)
     {
         if (IsTracingEnabled)
         {
@@ -79,7 +79,7 @@ public static class WebApplicationBuilderExtensions
             }
         });
 
-        return builder;
+        return new DefaultBicepExtensionBuilder(builder.Services);
     }
 
     /// <summary>

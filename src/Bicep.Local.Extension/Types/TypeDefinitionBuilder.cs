@@ -11,10 +11,12 @@ using Azure.Bicep.Types;
 using Azure.Bicep.Types.Concrete;
 using Azure.Bicep.Types.Index;
 using Azure.Bicep.Types.Serialization;
+using Bicep.Local.Extension.Host;
 using Bicep.Local.Extension.Types.Attributes;
 using static Google.Protobuf.Reflection.GeneratedCodeInfo.Types;
 
 namespace Bicep.Local.Extension.Types;
+
 public class TypeDefinitionBuilder
     : ITypeDefinitionBuilder
 {
@@ -23,9 +25,7 @@ public class TypeDefinitionBuilder
     private readonly IDictionary<Type, Func<TypeBase>> typeToTypeBaseMap;
 
     protected readonly ConcurrentDictionary<Type, TypeBase> typeCache;
-    private readonly string name;
-    private readonly string version;
-    private readonly bool isSingleton;
+    private readonly Settings settings;
     private readonly Type? configurationType;
     protected readonly TypeFactory factory;
 
@@ -46,17 +46,13 @@ public class TypeDefinitionBuilder
     /// </para>
     /// </remarks>
     public TypeDefinitionBuilder(
-        string name,
-        string version,
-        bool isSingleton,
+        Settings settings,
         Type? configurationType,
         TypeFactory factory,
         ITypeProvider typeProvider,
         IDictionary<Type, Func<TypeBase>> typeToTypeBaseMap)
     {
-        this.name = name;
-        this.version = version;
-        this.isSingleton = isSingleton;
+        this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
         this.configurationType = configurationType;
         this.factory = factory;
         this.typeProvider = typeProvider;
@@ -98,7 +94,7 @@ public class TypeDefinitionBuilder
         var index = new TypeIndex(
             resourceTypes,
             new Dictionary<string, IReadOnlyDictionary<string, IReadOnlyList<CrossFileTypeReference>>>(),
-            new(name, version, isSingleton, config!),
+            new(settings.Name, settings.Version, settings.IsSingleton, config!),
             null);
 
         return new(
