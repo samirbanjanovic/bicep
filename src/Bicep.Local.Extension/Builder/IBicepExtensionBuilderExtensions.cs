@@ -44,10 +44,36 @@ public static class IBicepExtensionBuilderExtensions
         return builder;
     }
 
+    public record HandlerAssemblies(Assembly[] Assemblies);
+    public static IBicepExtensionBuilder WithHandlerAssembly(this IBicepExtensionBuilder builder, Assembly handlerAssembly)
+        => WithHandlerAssembly(builder, [handlerAssembly]);
+
+    public static IBicepExtensionBuilder WithHandlerAssembly(this IBicepExtensionBuilder builder, Assembly[] handlerAssembly)
+    {
+        ArgumentNullException.ThrowIfNull(handlerAssembly, nameof(handlerAssembly));
+        var handlers = handlerAssembly
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(type => typeof(IResourceHandler).IsAssignableFrom(type) && !type.IsAbstract && !type.IsInterface)
+            .Select(handlerType => builder.Services.AddSingleton(typeof(IResourceHandler), handlerType))
+            .ToArray();
+
+
+        return builder;
+    }
+
+    public record TypeAssemblies(Assembly[] Assemblies);
+
     public static IBicepExtensionBuilder WithTypesAssembly(this IBicepExtensionBuilder builder, Assembly typeAssembly)
+        => WithTypesAssembly(builder, [typeAssembly]);
+
+    public static IBicepExtensionBuilder WithTypesAssembly(this IBicepExtensionBuilder builder, Assembly[] typeAssembly)
     {
         ArgumentNullException.ThrowIfNull(typeAssembly, nameof(typeAssembly));
-        builder.Services.AddSingleton<ITypeProvider>(new TypeProvider([typeAssembly]));
+        if (typeAssembly.Length == 0)
+        {
+            throw new ArgumentException("At least one assembly must be provided.", nameof(typeAssembly));
+        }
+        builder.Services.AddSingleton(new TypeAssemblies(typeAssembly));
         return builder;
     }
 
